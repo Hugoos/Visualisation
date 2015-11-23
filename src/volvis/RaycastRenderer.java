@@ -16,7 +16,6 @@ import util.TFChangeListener;
 import util.VectorMath;
 import volume.GradientVolume;
 import volume.Volume;
-import volume.VoxelGradient;
 
 /**
  *
@@ -26,10 +25,25 @@ public class RaycastRenderer extends Renderer implements TFChangeListener {
 
     private Volume volume = null;
     private GradientVolume gradients = null;
+    private Visualization vis = null;
     RaycastRendererPanel panel;
     TransferFunction tFunc;
     TransferFunctionEditor tfEditor;
     TransferFunction2DEditor tfEditor2D;
+    private int currentMode = 0;
+    private int SLICER = 0;
+    private int MIP = 1;
+    private int Composite = 2;
+
+    public void setCurrentMode(int currentMode) {
+        this.currentMode = currentMode;
+        vis.update();
+    }
+
+    public void setVis(Visualization vis) {
+        this.vis = vis;
+    }
+    
     
     public RaycastRenderer() {
         panel = new RaycastRendererPanel(this);
@@ -117,16 +131,20 @@ public class RaycastRenderer extends Renderer implements TFChangeListener {
         double[] pixelCoord = new double[3];
         VectorMath.setVector(volumeCenter, volume.getDimX() / 2, volume.getDimY() / 2, volume.getDimZ() / 2);
         
+        
         for (int j = 0; j < image.getHeight(); j++) {
             for (int i = 0; i < image.getWidth(); i++) {
                 int maxVal = 0;
-                for (int k = 0; k < 10; k++){
+                
+                
+                for (int k = 0; k < 60; k++){
+                    //System.out.println(k * viewVec[2]);
                     pixelCoord[0] = uVec[0] * (i - imageCenter) + vVec[0] * (j - imageCenter)
-                        + volumeCenter[0] + k * viewVec[0];
+                        + volumeCenter[0] + 1 * k * viewVec[0];
                     pixelCoord[1] = uVec[1] * (i - imageCenter) + vVec[1] * (j - imageCenter)
-                        + volumeCenter[1] + k * viewVec[1];
+                        + volumeCenter[1] + 1 * k * viewVec[1];
                     pixelCoord[2] = uVec[2] * (i - imageCenter) + vVec[2] * (j - imageCenter)
-                        + volumeCenter[2] + k * viewVec[2];
+                        + volumeCenter[2] + 1 * k * viewVec[2];
                     
                     int value = getVoxel(pixelCoord);
                     if (value > maxVal){
@@ -291,8 +309,14 @@ public class RaycastRenderer extends Renderer implements TFChangeListener {
         gl.glGetDoublev(GL2.GL_MODELVIEW_MATRIX, viewMatrix, 0);
 
         long startTime = System.currentTimeMillis();
-        //slicer(viewMatrix);    
-        MIP(viewMatrix);
+        switch (currentMode){
+            case 0: slicer(viewMatrix);
+                    break;
+            case 1: MIP(viewMatrix);
+                    break;
+            default:MIP(viewMatrix);
+                    break;
+        }
         long endTime = System.currentTimeMillis();
         double runningTime = (endTime - startTime);
         panel.setSpeedLabel(Double.toString(runningTime));
