@@ -10,6 +10,7 @@ import gui.RaycastRendererPanel;
 import gui.TransferFunction2DEditor;
 import gui.TransferFunctionEditor;
 import java.awt.image.BufferedImage;
+import java.util.ArrayList;
 import javax.media.opengl.GL;
 import javax.media.opengl.GL2;
 import util.TFChangeListener;
@@ -193,13 +194,13 @@ public class RaycastRenderer extends Renderer implements TFChangeListener {
         double[] pixelCoord = new double[3];
         VectorMath.setVector(volumeCenter, volume.getDimX() / 2, volume.getDimY() / 2, volume.getDimZ() / 2);
         
-        
+        ArrayList<TFColor> compositeColors = new ArrayList<TFColor>();
         for (int j = 0; j < image.getHeight(); j++) {
             for (int i = 0; i < image.getWidth(); i++) {
-                int maxVal = 0;
+                compositeColors.clear();
                 
                 
-                for (int k = 0; k < 60; k++){
+                for (int k = 0; k < 50; k++){
                     //System.out.println(k * viewVec[2]);
                     pixelCoord[0] = uVec[0] * (i - imageCenter) + vVec[0] * (j - imageCenter)
                         + volumeCenter[0] + 1 * k * viewVec[0];
@@ -209,12 +210,29 @@ public class RaycastRenderer extends Renderer implements TFChangeListener {
                         + volumeCenter[2] + 1 * k * viewVec[2];
                     
                     int value = getVoxel(pixelCoord);
-                    if (value > maxVal){
-                        maxVal = value;
-                    }
+                    compositeColors.add(tFunc.getColor(value));
                 }
                 // Map the intensity to a grey value by linear scaling
-                voxelColor = tFunc.getColor(maxVal);
+                double r = compositeColors.get(0).r;
+                double g = compositeColors.get(0).g;
+                double b = compositeColors.get(0).b;
+                double a = compositeColors.get(0).a;
+                for (int q = 1; q < compositeColors.size(); q++){
+                    double invOpacity = 1-compositeColors.get(q).a;
+                    r *= invOpacity;
+                    g *= invOpacity;
+                    b *= invOpacity;
+                    a *= invOpacity;
+                    r += compositeColors.get(q).r;
+                    g += compositeColors.get(q).g;
+                    b += compositeColors.get(q).b;
+                    a += compositeColors.get(q).a;
+                }
+                voxelColor.a = a;
+                voxelColor.r = r;
+                voxelColor.g = g;
+                voxelColor.b = b;
+                //voxelColor = tFunc.getColor(maxVal);
                 //voxelColor.r = maxVal/max;
                 //voxelColor.g = voxelColor.r;
                 //voxelColor.b = voxelColor.r;
