@@ -138,7 +138,7 @@ public class RaycastRenderer extends Renderer implements TFChangeListener {
                 int maxVal = 0;
                 
                 
-                for (int k = 0; k < 60; k++){
+                for (double k = -volumeCenter[2]; k < volumeCenter[2];k++){
                     //System.out.println(k * viewVec[2]);
                     pixelCoord[0] = uVec[0] * (i - imageCenter) + vVec[0] * (j - imageCenter)
                         + volumeCenter[0] + 1 * k * viewVec[0];
@@ -200,7 +200,7 @@ public class RaycastRenderer extends Renderer implements TFChangeListener {
                 compositeColors.clear();
                 
                 
-                for (int k = 0; k < 50; k++){
+                for (double k = -volumeCenter[2]; k < volumeCenter[2]; k++){
                     //System.out.println(k * viewVec[2]);
                     pixelCoord[0] = uVec[0] * (i - imageCenter) + vVec[0] * (j - imageCenter)
                         + volumeCenter[0] + 1 * k * viewVec[0];
