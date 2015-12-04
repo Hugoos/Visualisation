@@ -35,10 +35,19 @@ public class RaycastRenderer extends Renderer implements TFChangeListener {
     private int SLICER = 0;
     private int MIP = 1;
     private int COMPOSITE = 2;
+    //private boolean lowRes = true;
 
     public void setCurrentMode(int currentMode) {
         this.currentMode = currentMode;
         vis.update();
+    }
+
+    private int resolution(){
+        if(interactiveMode){
+            return 2;
+        } else {
+            return 1;
+        }
     }
 
     public void setVis(Visualization vis) {
@@ -54,7 +63,6 @@ public class RaycastRenderer extends Renderer implements TFChangeListener {
     public void setVolume(Volume vol) {
         System.out.println("Assigning volume");
         volume = vol;
-
         System.out.println("Computing gradients");
         gradients = new GradientVolume(vol);
 
@@ -71,7 +79,7 @@ public class RaycastRenderer extends Renderer implements TFChangeListener {
         tFunc = new TransferFunction(volume.getMinimum(), volume.getMaximum());
         
         // uncomment this to initialize the TF with good starting values for the orange dataset 
-        //tFunc.setTestFunc();
+        tFunc.setTestFunc();
         
         
         tFunc.addTFChangeListener(this);
@@ -133,8 +141,8 @@ public class RaycastRenderer extends Renderer implements TFChangeListener {
         VectorMath.setVector(volumeCenter, volume.getDimX() / 2, volume.getDimY() / 2, volume.getDimZ() / 2);
         
         
-        for (int j = 0; j < image.getHeight(); j++) {
-            for (int i = 0; i < image.getWidth(); i++) {
+        for (int j = 0; j < image.getHeight(); j+=resolution()) {
+            for (int i = 0; i < image.getWidth(); i+=resolution()) {
                 int maxVal = 0;
                 
                 
@@ -168,6 +176,11 @@ public class RaycastRenderer extends Renderer implements TFChangeListener {
                 int c_blue = voxelColor.b <= 1.0 ? (int) Math.floor(voxelColor.b * 255) : 255;
                 int pixelColor = (c_alpha << 24) | (c_red << 16) | (c_green << 8) | c_blue;
                 image.setRGB(i, j, pixelColor);
+                if(interactiveMode){
+                    image.setRGB(i+1, j, pixelColor);
+                    image.setRGB(i, j+1, pixelColor);
+                    image.setRGB(i+1, j+1, pixelColor);
+                }
             }     
         }   
     }
@@ -195,8 +208,8 @@ public class RaycastRenderer extends Renderer implements TFChangeListener {
         VectorMath.setVector(volumeCenter, volume.getDimX() / 2, volume.getDimY() / 2, volume.getDimZ() / 2);
         
         ArrayList<TFColor> compositeColors = new ArrayList<TFColor>();
-        for (int j = 0; j < image.getHeight(); j++) {
-            for (int i = 0; i < image.getWidth(); i++) {
+        for (int j = 0; j < image.getHeight(); j+= resolution()) {
+            for (int i = 0; i < image.getWidth(); i+=resolution()) {
                 compositeColors.clear();
                 
                 
@@ -248,6 +261,11 @@ public class RaycastRenderer extends Renderer implements TFChangeListener {
                 int c_blue = voxelColor.b <= 1.0 ? (int) Math.floor(voxelColor.b * 255) : 255;
                 int pixelColor = (c_alpha << 24) | (c_red << 16) | (c_green << 8) | c_blue;
                 image.setRGB(i, j, pixelColor);
+                if(interactiveMode){
+                    image.setRGB(i+1, j, pixelColor);
+                    image.setRGB(i, j+1, pixelColor);
+                    image.setRGB(i+1, j+1, pixelColor);
+                }
             }     
         }   
     }
