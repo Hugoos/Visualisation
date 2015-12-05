@@ -118,6 +118,12 @@ public class RaycastRenderer extends Renderer implements TFChangeListener {
     public TransferFunctionEditor getTFPanel() {
         return tfEditor;
     }
+    
+    TFColor triLinearInterpolation(double[] coord){
+        TFColor interpolatedColor = new TFColor();
+        //Rodrigo todo
+        return interpolatedColor;
+    }
      
 
     short getVoxel(double[] coord) {
