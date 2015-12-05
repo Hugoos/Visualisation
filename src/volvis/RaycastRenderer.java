@@ -37,6 +37,7 @@ public class RaycastRenderer extends Renderer implements TFChangeListener {
     private int MIP = 1;
     private int COMPOSITE = 2;
     private int TRANSFER2D = 3;
+    private double sampleDistance = 5;
     //private boolean lowRes = true;
 
     public void setCurrentMode(int currentMode) {
@@ -54,6 +55,19 @@ public class RaycastRenderer extends Renderer implements TFChangeListener {
 
     public void setVis(Visualization vis) {
         this.vis = vis;
+    }
+    public int getMiddleMaxDimension(){
+            int high = 0;
+            if (volume.getDimX() > high){
+                high = volume.getDimX();
+            }
+            if (volume.getDimY() > high){
+                high = volume.getDimY();
+            }
+            if (volume.getDimZ() > high){
+                high = volume.getDimZ();
+            }
+           return high/2;
     }
     
     
@@ -161,7 +175,7 @@ public class RaycastRenderer extends Renderer implements TFChangeListener {
                 int maxVal = 0;
                 
                 
-                for (double k = -volumeCenter[2]; k < volumeCenter[2];k++){
+                for (double k = -getMiddleMaxDimension(); k < getMiddleMaxDimension();k+= sampleDistance){
                     pixelCoord[0] = uVec[0] * (i - imageCenter) + vVec[0] * (j - imageCenter)
                         + volumeCenter[0] + 1 * k * viewVec[0];
                     pixelCoord[1] = uVec[1] * (i - imageCenter) + vVec[1] * (j - imageCenter)
@@ -225,9 +239,8 @@ public class RaycastRenderer extends Renderer implements TFChangeListener {
         for (int j = 0; j < image.getHeight(); j+= resolution()) {
             for (int i = 0; i < image.getWidth(); i+=resolution()) {
                 compositeColors.clear();
-                
-                
-                for (double k = -volumeCenter[2]; k < volumeCenter[2]; k++){
+               
+                for (double k = -getMiddleMaxDimension(); k < getMiddleMaxDimension(); k+= sampleDistance){
                     //System.out.println(k * viewVec[2]);
                     pixelCoord[0] = uVec[0] * (i - imageCenter) + vVec[0] * (j - imageCenter)
                         + volumeCenter[0] + 1 * k * viewVec[0];
@@ -272,9 +285,9 @@ public class RaycastRenderer extends Renderer implements TFChangeListener {
                         double rU = compositeColors.get(q).r;
                         double gU = compositeColors.get(q).g;
                         double bU = compositeColors.get(q).b;
-                        ru += rU * (1-au);
-                        gu += gU * (1-au);
-                        bu += bU * (1-au);
+                        ru += aU * rU * (1-au);
+                        gu += aU * gU * (1-au);
+                        bu += aU * bU * (1-au);
                         au += aU * (1-au);
                     }
                 }
@@ -337,7 +350,7 @@ public class RaycastRenderer extends Renderer implements TFChangeListener {
                 compositeColors.clear();
                 
                 
-                for (double k = -volumeCenter[2]; k < volumeCenter[2]; k++){
+                for (double k = -getMiddleMaxDimension(); k < getMiddleMaxDimension(); k+= sampleDistance){
                     //System.out.println(k * viewVec[2]);
                     pixelCoord[0] = uVec[0] * (i - imageCenter) + vVec[0] * (j - imageCenter)
                         + volumeCenter[0] + 1 * k * viewVec[0];
@@ -357,7 +370,6 @@ public class RaycastRenderer extends Renderer implements TFChangeListener {
                     double r = tfEditor2D.triangleWidget.radius;
                     float magnitude = voxGra.mag;
                     if (magnitude == 0.0f && value == fv){
-                        System.out.println("hello");
                         newColor.a = 1;
                     } else if (magnitude > 0.0f &&  fv >= value - r * magnitude  && fv <= value + r * magnitude){
                         
@@ -401,9 +413,9 @@ public class RaycastRenderer extends Renderer implements TFChangeListener {
                         double rU = compositeColors.get(q).r;
                         double gU = compositeColors.get(q).g;
                         double bU = compositeColors.get(q).b;
-                        ru += rU * (1-au);
-                        gu += gU * (1-au);
-                        bu += bU * (1-au);
+                        ru += aU * rU * (1-au);
+                        gu += aU * gU * (1-au);
+                        bu += aU * bU * (1-au);
                         au += aU * (1-au);
                     }
                 }

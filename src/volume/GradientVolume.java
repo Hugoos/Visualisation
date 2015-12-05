@@ -52,9 +52,9 @@ public class GradientVolume {
     private void compute() {
 
         // this just initializes all gradients to the vector (0,0,0)
-        for (int i=0; i<data.length; i++) {
+        //for (int i=0; i<data.length; i++) {
             //data[i] = zero;
-        }   
+        //}   
         float dx = 0;
         float dy = 0;
         float dz = 0;

@@ -5,6 +5,8 @@
 package volvis;
 
 import java.awt.Component;
+import java.awt.event.ActionEvent;
+import java.awt.event.ActionListener;
 import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
 import java.awt.event.MouseMotionAdapter;
@@ -16,6 +18,7 @@ import javax.media.opengl.GL2;
 import javax.media.opengl.GLAutoDrawable;
 import javax.media.opengl.GLEventListener;
 import javax.media.opengl.glu.GLU;
+import javax.swing.Timer;
 import util.TFChangeListener;
 import util.TrackballInteractor;
 
@@ -31,10 +34,12 @@ public class Visualization implements GLEventListener, TFChangeListener {
     int winWidth, winHeight;
     double fov = 20.0;
     TrackballInteractor trackball;
+    Timer timer;
         
     public Visualization(GLAutoDrawable canvas) {
         this.renderers = new ArrayList<Renderer>();
         this.canvas = canvas;
+        this.timer = new Timer(1, mouseWheelUpdate);
         
         if (canvas instanceof Component) {
             Component comp = (Component) canvas;
@@ -162,11 +167,20 @@ public class Visualization implements GLEventListener, TFChangeListener {
           
         }
     
-    
+    ActionListener mouseWheelUpdate = new ActionListener() {
+
+            @Override
+            public void actionPerformed(ActionEvent ae) {
+                timer.stop();
+                update();
+            }
+        };
     class MouseWheelHandler implements MouseWheelListener {
 
         @Override
         public void mouseWheelMoved(MouseWheelEvent e) {
+            timer.stop();
+            
             if (e.getWheelRotation() < 0) { // up
                 fov--;
                 if (fov < 2) {
@@ -175,7 +189,14 @@ public class Visualization implements GLEventListener, TFChangeListener {
             } else { // down
                 fov++;
             }
+            for (int i = 0; i < renderers.size(); i++) {
+               renderers.get(i).setInteractiveMode(true);
+           }
             update();
+            for (int i = 0; i < renderers.size(); i++) {
+               renderers.get(i).setInteractiveMode(false);
+           }
+            timer.start();
         }
         
     }
