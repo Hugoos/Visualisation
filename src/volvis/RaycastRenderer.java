@@ -39,6 +39,27 @@ public class RaycastRenderer extends Renderer implements TFChangeListener {
     private int TRANSFER2D = 3;
     private double sampleDistance = 5;
     //private boolean lowRes = true;
+    
+    //point to interpolate
+        double[] p = new double[3];
+        //voxels
+        double[] p000 = new double[3];
+        double[] p001 = new double[3];
+        double[] p010 = new double[3];
+        double[] p011 = new double[3];
+        double[] p100 = new double[3];
+        double[] p101 = new double[3];
+        double[] p110 = new double[3];
+        double[] p111 = new double[3];
+        //C values
+        double[] c0 = new double[3];
+        double[] c1 = new double[3];
+        double[] c2 = new double[3];
+        double[] c3 = new double[3];
+        double[] c4 = new double[3];
+        double[] c5 = new double[3];
+        double[] c6 = new double[3];
+        double[] c7 = new double[3];
 
     public void setCurrentMode(int currentMode) {
         this.currentMode = currentMode;
@@ -121,7 +142,53 @@ public class RaycastRenderer extends Renderer implements TFChangeListener {
     
     TFColor triLinearInterpolation(double[] coord){
         TFColor interpolatedColor = new TFColor();
-        //Rodrigo todo
+        //Rodrigo todo      
+        
+        //result interpol value
+        double[] interpol = new double[3];
+        VectorMath.setVector(interpol, 0, 0, 0);
+        //init p values
+        VectorMath.setVector(p, 0, 0, 0);
+        VectorMath.setVector(p000, 0, 0, 0);
+        VectorMath.setVector(p001, 0, 0, 0);
+        VectorMath.setVector(p010, 0, 0, 0);
+        VectorMath.setVector(p011, 0, 0, 0);
+        VectorMath.setVector(p100, 0, 0, 0);
+        VectorMath.setVector(p101, 0, 0, 0);
+        VectorMath.setVector(p110, 0, 0, 0);
+        VectorMath.setVector(p111, 0, 0, 0);
+        //set c values
+        c0[0] = p000[0]; c0[1] = p000[1]; c0[2] = p000[2];
+        VectorMath.minusVector(p100, p000, c1);
+        VectorMath.minusVector(p010, p000, c2);
+        VectorMath.minusVector(p001, p000, c3);
+        c4[0] = p110[0] - p010[0] - p100[0] + p000[0]; 
+        c4[1] = p110[1] - p010[1] - p100[1] + p000[1]; 
+        c4[2] = p110[2] - p010[2] - p100[2] + p000[2];
+        c5[0] = p011[0] - p001[0] - p010[0] + p000[0];
+        c5[1] = p011[1] - p001[1] - p010[1] + p000[1];
+        c5[2] = p011[2] - p001[2] - p010[2] + p000[2];
+        c6[0] = p101[0] - p001[0] - p100[0] + p000[0];
+        c6[1] = p101[1] - p001[1] - p100[1] + p000[1];
+        c6[2] = p101[2] - p001[2] - p100[2] + p000[2];
+        c7[0] = p111[0] - p011[0] - p101[0] - p110[0] + p100[0] + p001[0] + p010[0] - p000[0];
+        c7[1] = p111[1] - p011[1] - p101[1] - p110[1] + p100[1] + p001[1] + p010[1] - p000[1];
+        c7[2] = p111[2] - p011[2] - p101[2] - p110[2] + p100[2] + p001[2] + p010[2] - p000[2];
+        //Get delta increments
+        double deltaX = (p[0]-p000[0])/(p111[0]-p000[0]);
+        double deltaY = (p[1]-p000[1])/(p111[1]-p000[1]);
+        double deltaZ = (p[2]-p000[2])/(p111[2]-p000[2]);
+        //get interpolated value
+        interpol[0] = c0[0] + c1[0]*deltaX + c2[0]*deltaY + c3[0]*deltaZ + c4[0]*deltaX*deltaY + c5[0]*deltaY*deltaZ + c6[0]*deltaZ*deltaX + c7[0]*deltaX*deltaY*deltaZ;
+        interpol[1] = c0[1] + c1[1]*deltaX + c2[1]*deltaY + c3[1]*deltaZ + c4[1]*deltaX*deltaY + c5[1]*deltaY*deltaZ + c6[1]*deltaZ*deltaX + c7[1]*deltaX*deltaY*deltaZ;
+        interpol[2] = c0[2] + c1[2]*deltaX + c2[2]*deltaY + c3[2]*deltaZ + c4[2]*deltaX*deltaY + c5[2]*deltaY*deltaZ + c6[2]*deltaZ*deltaX + c7[2]*deltaX*deltaY*deltaZ;
+        
+        
+        
+        
+        
+        
+        
         return interpolatedColor;
     }
      
