@@ -141,7 +141,6 @@ public class RaycastRenderer extends Renderer implements TFChangeListener {
      
 
     short getVoxel(double[] coord) {
-
         if (coord[0] < 0 || coord[0] > volume.getDimX() || coord[1] < 0 || coord[1] > volume.getDimY()
                 || coord[2] < 0 || coord[2] > volume.getDimZ()) {
             return 0;
@@ -151,7 +150,7 @@ public class RaycastRenderer extends Renderer implements TFChangeListener {
         int y = (int) Math.floor(coord[1]);
         int z = (int) Math.floor(coord[2]);
 
-        return volume.getVoxel(x, y, z);
+       return volume.getVoxel(x, y, z);
     }
     
     TFColor getColor(double[] coord){
@@ -481,7 +480,9 @@ public class RaycastRenderer extends Renderer implements TFChangeListener {
                         
                         newColor.a = 0;
                     }
-                    
+                    if(shading){
+                        newColor = phongShading( newColor , pixelCoord, viewVec, 0.1, 0.7, 0.2, 10);
+                    }
                     compositeColors.add(newColor);
                 }
                 // Map the intensity to a grey value by linear scaling
@@ -506,9 +507,7 @@ public class RaycastRenderer extends Renderer implements TFChangeListener {
                 voxelColor.g = g;
                 voxelColor.b = b;
                 */
-                if(shading){
-                        compositeColors.set(compositeColors.size()-1, phongShading(compositeColors.get(compositeColors.size()-1) , pixelCoord, originPoint, 0.1, 0.7, 0.2, 10));
-                    }
+                
                 double ru = 0;
                 double gu = 0;
                 double bu = 0;
