@@ -45,6 +45,18 @@ public class VectorMath {
     public static double length(double[] v) {
         return Math.sqrt(v[0]*v[0] + v[1]*v[1] + v[2]*v[2]);
     }
+    //compute difference of vectors
+    public static void minusVector(double[] v, double[] w, double[] r){
+        r[0] = v[0]-w[0];
+        r[1] = v[1]-w[1];
+        r[2] = v[2]-w[2];
+    }
+    public static void scalarVectorProd(double[] v, double s){
+        v[0] = s*v[0];
+        v[1] = s*v[1];
+        v[2] = s*v[2];
+    }
+    
     
 
 }
