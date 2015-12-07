@@ -38,6 +38,7 @@ public class RaycastRenderer extends Renderer implements TFChangeListener {
     private int COMPOSITE = 2;
     private int TRANSFER2D = 3;
     private double sampleDistance = 5;
+
     //private boolean lowRes = true;
     
     //point to interpolate
@@ -61,9 +62,25 @@ public class RaycastRenderer extends Renderer implements TFChangeListener {
         double[] c6 = new double[3];
         double[] c7 = new double[3];
 
+    private boolean shading = false;
+    private TFColor[] data;
+
+
     public void setCurrentMode(int currentMode) {
         this.currentMode = currentMode;
         vis.update();
+    }
+
+    public Visualization getVis() {
+        return vis;
+    }
+
+    public void switchShading() {
+        if(shading){
+            shading = false;
+        } else {
+            shading = true;
+        }
     }
 
     private int resolution(){
@@ -102,6 +119,7 @@ public class RaycastRenderer extends Renderer implements TFChangeListener {
         volume = vol;
         System.out.println("Computing gradients");
         gradients = new GradientVolume(vol);
+        data = new TFColor[volume.getDimX() * volume.getDimY() * volume.getDimZ()];
 
         // set up image for storing the resulting rendering
         // the image width and height are equal to the length of the volume diagonal
@@ -207,6 +225,22 @@ public class RaycastRenderer extends Renderer implements TFChangeListener {
         return volume.getVoxel(x, y, z);
     }
     
+    TFColor getColor(double[] coord){
+        int x = (int) Math.floor(coord[0]);
+        int y = (int) Math.floor(coord[1]);
+        int z = (int) Math.floor(coord[2]);
+        
+        return data[x + volume.getDimX()*(y + volume.getDimY() * z)];
+    }
+    
+    public void setColor(double[] coord, TFColor value) {
+        int x = (int) Math.floor(coord[0]);
+        int y = (int) Math.floor(coord[1]);
+        int z = (int) Math.floor(coord[2]);
+        
+        data[x + volume.getDimX()*(y + volume.getDimY()*z)] = value;
+    }
+    
     VoxelGradient getGradient(double[] coord) {
         if (coord[0] < 0 || coord[0] > volume.getDimX() || coord[1] < 0 || coord[1] > volume.getDimY()
                 || coord[2] < 0 || coord[2] > volume.getDimZ()) {
@@ -286,6 +320,26 @@ public class RaycastRenderer extends Renderer implements TFChangeListener {
         }   
     }
     
+    void calculateVoxelColor(){
+        float dx = 0;
+        float dy = 0;
+        float dz = 0;
+        for (double i = 0; i < volume.getDimX(); i++){     
+            for (double j = 0; j < volume.getDimY(); j++){   
+                for (double k = 0; k < volume.getDimZ(); k++){
+                    double[] coord = new double[3];
+                    coord[0] = i;
+                    coord[1] = j;
+                    coord[2] = k;
+                    
+                    int intensity = getVoxel(coord);
+                    TFColor newCol = tFunc.getColor(intensity);
+                    setColor(coord, newCol);
+                }
+            }
+        }
+    }
+    
     void composite(double[] viewMatrix){
         for (int j = 0; j < image.getHeight(); j++) {
             for (int i = 0; i < image.getWidth(); i++) {
@@ -323,7 +377,11 @@ public class RaycastRenderer extends Renderer implements TFChangeListener {
                         + volumeCenter[2] + 1 * k * viewVec[2];
                     
                     int value = getVoxel(pixelCoord);
-                    compositeColors.add(tFunc.getColor(value));
+                    TFColor newColor = tFunc.getColor(value);
+                    if(shading){   
+                        newColor = phongShading( newColor , pixelCoord, viewVec, 0.1, 0.7, 0.2, 10);
+                    }
+                    compositeColors.add(newColor);
                 }
                 // Map the intensity to a grey value by linear scaling
                 
@@ -393,6 +451,49 @@ public class RaycastRenderer extends Renderer implements TFChangeListener {
             }     
         }   
     }
+     
+    private TFColor phongShading(TFColor original, double[] coord, double[] origin, double ambient, double diff, double spec, double alpha){
+        VoxelGradient gradient = getGradient(coord);
+        TFColor newColor = new TFColor();
+        TFColor lightSource = new TFColor(255,255,255,0);
+        double[] L = new double[3]; 
+        double[] H = new double[3];
+        double[] N = new double[3];
+        L[0] = origin[0]-coord[0];
+        L[1] = origin[1]-coord[1];
+        L[2] = origin[2]-coord[2];
+        double mag = Math.sqrt(L[0]*L[0]+L[1]*L[1]+L[2]*L[2]);
+        L[0] /= mag;
+        L[1] /= mag;
+        L[2] /= mag;
+        H[0] = 2*L[0];
+        H[1] = 2*L[1];
+        H[2] = 2*L[2];
+        mag = Math.sqrt(H[0]*H[0]+H[1]*H[1]+H[2]*H[2]);
+        H[0] /= mag;
+        H[1] /= mag;
+        H[2] /= mag;
+        if (gradient.mag == 0.0 && gradient.x == 0.0 && gradient.y == 0.0 && gradient.z == 0.0 ){
+            return original;
+        }
+        N[0] = (double) gradient.x / gradient.mag;
+        N[1] = (double) gradient.y / gradient.mag;
+        N[2] = (double) gradient.z / gradient.mag;
+        
+        double dotLN = L[0]*N[0] + L[1]*N[1]+ L[2]*N[2];
+        double dotNH = N[0]*H[0] + N[1]*H[1]+ N[2]*H[2];
+        if (dotLN < 0 || dotNH < 0){
+            return original;
+        }
+        double dotNHa = Math.pow(dotNH, alpha);
+        //System.out.println(dotLN + " " + dotNHa);
+        newColor.a = original.a;
+        newColor.r = lightSource.r * ambient + original.r * diff * dotLN +  spec * dotNHa;
+        newColor.g = lightSource.g * ambient + original.g * diff * dotLN +  spec * dotNHa;
+        newColor.b = lightSource.b * ambient + original.b * diff * dotLN +  spec * dotNHa;
+        //System.out.println(newColor.r + " " + newColor.g + " " + newColor.b);
+        return newColor;
+     }
     
     void transfer2D(double[] viewMatrix){
         for (int j = 0; j < image.getHeight(); j++) {
@@ -476,6 +577,9 @@ public class RaycastRenderer extends Renderer implements TFChangeListener {
                 voxelColor.g = g;
                 voxelColor.b = b;
                 */
+                if(shading){
+                        compositeColors.set(compositeColors.size()-1, phongShading(compositeColors.get(compositeColors.size()-1) , pixelCoord, originPoint, 0.1, 0.7, 0.2, 10));
+                    }
                 double ru = 0;
                 double gu = 0;
                 double bu = 0;
@@ -660,6 +764,7 @@ public class RaycastRenderer extends Renderer implements TFChangeListener {
         gl.glGetDoublev(GL2.GL_MODELVIEW_MATRIX, viewMatrix, 0);
 
         long startTime = System.currentTimeMillis();
+        //calculateVoxelColor(); //Calculate the colors for every voxel
         switch (currentMode){
             case 0: slicer(viewMatrix);
                     break;
