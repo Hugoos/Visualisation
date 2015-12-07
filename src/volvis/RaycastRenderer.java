@@ -481,15 +481,12 @@ public class RaycastRenderer extends Renderer implements TFChangeListener {
         
         double dotLN = L[0]*N[0] + L[1]*N[1]+ L[2]*N[2];
         double dotNH = N[0]*H[0] + N[1]*H[1]+ N[2]*H[2];
-        if (dotLN < 0 || dotNH < 0){
-            return original;
-        }
         double dotNHa = Math.pow(dotNH, alpha);
         //System.out.println(dotLN + " " + dotNHa);
         newColor.a = original.a;
-        newColor.r = lightSource.r * ambient + original.r * diff * dotLN +  spec * dotNHa;
-        newColor.g = lightSource.g * ambient + original.g * diff * dotLN +  spec * dotNHa;
-        newColor.b = lightSource.b * ambient + original.b * diff * dotLN +  spec * dotNHa;
+        newColor.r = lightSource.r * ambient + original.r * diff * Math.max(0.0, dotLN) + original.r * spec * Math.max(0.0, dotNHa);
+        newColor.g = lightSource.g * ambient + original.g * diff * Math.max(0.0, dotLN) + original.g * spec * Math.max(0.0, dotNHa);
+        newColor.b = lightSource.b * ambient + original.b * diff * Math.max(0.0, dotLN) + original.b * spec * Math.max(0.0, dotNHa);
         //System.out.println(newColor.r + " " + newColor.g + " " + newColor.b);
         return newColor;
      }
@@ -543,41 +540,19 @@ public class RaycastRenderer extends Renderer implements TFChangeListener {
                     double r = tfEditor2D.triangleWidget.radius;
                     float magnitude = voxGra.mag;
                     if (magnitude == 0.0f && value == fv){
-                        newColor.a = 1;
+                        newColor.a = baseColor.a;
                     } else if (magnitude > 0.0f &&  fv >= value - r * magnitude  && fv <= value + r * magnitude){
                         
-                        newColor.a = 1 - (1/r) * Math.abs((fv - value)/magnitude);
+                        newColor.a = baseColor.a * (1 - (1/r) * Math.abs((fv - value)/magnitude));
                     } else {
                         
                         newColor.a = 0;
                     }
                     if(shading){
-                        newColor = phongShading( newColor , pixelCoord, viewVec, 0.1, 0.7, 0.2, 10);
+                        newColor = phongShading(newColor , pixelCoord, viewVec, 0.1, 0.7, 0.2, 10);
                     }
                     compositeColors.add(newColor);
                 }
-                // Map the intensity to a grey value by linear scaling
-                
-                /* double r = compositeColors.get(0).r;
-                double g = compositeColors.get(0).g;
-                double b = compositeColors.get(0).b;
-                double a = compositeColors.get(0).a;
-                for (int q = 1; q < compositeColors.size(); q++){
-                    double invOpacity = 1-compositeColors.get(q).a;
-                    r *= invOpacity;
-                    g *= invOpacity;
-                    b *= invOpacity;
-                    a *= invOpacity;
-                    r += compositeColors.get(q).r;
-                    g += compositeColors.get(q).g;
-                    b += compositeColors.get(q).b;
-                    a += compositeColors.get(q).a;
-                }
-                voxelColor.a = a;
-                voxelColor.r = r;
-                voxelColor.g = g;
-                voxelColor.b = b;
-                */
                 
                 double ru = 0;
                 double gu = 0;
