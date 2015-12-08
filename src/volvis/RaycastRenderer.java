@@ -39,7 +39,7 @@ public class RaycastRenderer extends Renderer implements TFChangeListener {
     private int TRANSFER2D = 3;
     private double sampleDistance = 2;
     private boolean debug = false;
-    private double[] pos = new double[3];
+    //private double[] pos = new double[3];
 
     //private boolean lowRes = true;
     
@@ -75,7 +75,7 @@ public class RaycastRenderer extends Renderer implements TFChangeListener {
     }
     
     public void setPos(double[] posi){
-        pos = posi;
+        //pos = posi;
     }
 
     public Visualization getVis() {
@@ -458,9 +458,9 @@ public class RaycastRenderer extends Renderer implements TFChangeListener {
                     newColor.r = tFunc.getColor(value).r;
                     newColor.g = tFunc.getColor(value).g;
                     newColor.b = tFunc.getColor(value).b;
-                    if(shading){   
-                        newColor = phongShading(newColor , pixelCoord, viewVec, 0.1, 0.7, 0.2, 10);
-                    }
+                    //if(shading){   
+                    //    newColor = phongShading(newColor , pixelCoord, viewVec, 0.1, 0.7, 0.2, 10);
+                    //}
                     compositeColors.add(newColor);
                 }
                 // Map the intensity to a grey value by linear scaling
@@ -654,7 +654,7 @@ public class RaycastRenderer extends Renderer implements TFChangeListener {
                         testColor.r = newColor.r;
                         testColor.g = newColor.g;
                         testColor.b = newColor.b;
-                        newColor = phongShading(testColor , pixelCoord, pos, 0.1, 0.7, 0.2, 10);
+                        newColor = phongShading(testColor , pixelCoord, viewVec, 0.1, 0.7, 0.2, 10);
                     }
                     compositeColors.add(newColor);
                 }
