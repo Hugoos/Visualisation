@@ -37,7 +37,8 @@ public class RaycastRenderer extends Renderer implements TFChangeListener {
     private int MIP = 1;
     private int COMPOSITE = 2;
     private int TRANSFER2D = 3;
-    private double sampleDistance = 5;
+    private double sampleDistance = 2.5;
+    private boolean debug = false;
 
     //private boolean lowRes = true;
     
@@ -359,7 +360,7 @@ public class RaycastRenderer extends Renderer implements TFChangeListener {
                     pixelCoord[2] = uVec[2] * (i - imageCenter) + vVec[2] * (j - imageCenter)
                         + volumeCenter[2] + 1 * k * viewVec[2];
                     
-                    int value = getVoxel(pixelCoord);
+                    int value = trilinearInterpolation(pixelCoord);
                     if (value > maxVal){
                         maxVal = value;
                     }
@@ -401,7 +402,7 @@ public class RaycastRenderer extends Renderer implements TFChangeListener {
                     coord[1] = j;
                     coord[2] = k;
                     
-                    int intensity = getVoxel(coord);
+                    int intensity = trilinearInterpolation(coord);
                     TFColor newCol = tFunc.getColor(intensity);
                     setColor(coord, newCol);
                 }
@@ -445,7 +446,7 @@ public class RaycastRenderer extends Renderer implements TFChangeListener {
                     pixelCoord[2] = uVec[2] * (i - imageCenter) + vVec[2] * (j - imageCenter)
                         + volumeCenter[2] + 1 * k * viewVec[2];
                     
-                    int value = getVoxel(pixelCoord);
+                    int value = trilinearInterpolation(pixelCoord);
                     TFColor newColor = tFunc.getColor(value);
                     if(shading){   
                         newColor = phongShading( newColor , pixelCoord, viewVec, 0.1, 0.7, 0.2, 10);
@@ -524,33 +525,37 @@ public class RaycastRenderer extends Renderer implements TFChangeListener {
     private TFColor phongShading(TFColor original, double[] coord, double[] origin, double ambient, double diff, double spec, double alpha){
         VoxelGradient gradient = getGradient(coord);
         TFColor newColor = new TFColor();
-        TFColor lightSource = new TFColor(255,255,255,0);
+        TFColor lightSource = new TFColor(0,0,0,0);
+        if (debug){
+            //System.out.println(origin[0] + " " + origin[1] + " " + origin[2]);
+            debug = false;
+        }
         double[] L = new double[3]; 
         double[] H = new double[3];
         double[] N = new double[3];
+        
         L[0] = origin[0]-coord[0];
         L[1] = origin[1]-coord[1];
         L[2] = origin[2]-coord[2];
         double mag = Math.sqrt(L[0]*L[0]+L[1]*L[1]+L[2]*L[2]);
-        L[0] /= mag;
-        L[1] /= mag;
-        L[2] /= mag;
+        L[0] = L[0] / mag;
+        L[1] = L[1] / mag;
+        L[2] = L[2] / mag;
         H[0] = 2*L[0];
         H[1] = 2*L[1];
         H[2] = 2*L[2];
         mag = Math.sqrt(H[0]*H[0]+H[1]*H[1]+H[2]*H[2]);
-        H[0] /= mag;
-        H[1] /= mag;
-        H[2] /= mag;
-        if (gradient.mag == 0.0 && gradient.x == 0.0 && gradient.y == 0.0 && gradient.z == 0.0 ){
-            return original;
-        }
-        N[0] = (double) gradient.x / gradient.mag;
-        N[1] = (double) gradient.y / gradient.mag;
-        N[2] = (double) gradient.z / gradient.mag;
-        
-        double dotLN = L[0]*N[0] + L[1]*N[1]+ L[2]*N[2];
-        double dotNH = N[0]*H[0] + N[1]*H[1]+ N[2]*H[2];
+        H[0] = H[0] / mag;
+        H[1] = H[1] / mag;
+        H[2] = H[2] / mag;
+        //if (gradient.mag == 0.0 && gradient.x == 0.0 && gradient.y == 0.0 && gradient.z == 0.0 ){
+        //    return original;
+        //}
+        N[0] = (double) gradient.x / (double) gradient.mag;
+        N[1] = (double) gradient.y / (double) gradient.mag;
+        N[2] = (double) gradient.z / (double) gradient.mag;
+        double dotLN = VectorMath.dotproduct(L, N);
+        double dotNH = VectorMath.dotproduct(N, H);;
         double dotNHa = Math.pow(dotNH, alpha);
         //System.out.println(dotLN + " " + dotNHa);
         newColor.a = original.a;
@@ -562,6 +567,7 @@ public class RaycastRenderer extends Renderer implements TFChangeListener {
      }
     
     void transfer2D(double[] viewMatrix){
+        debug = true;
         for (int j = 0; j < image.getHeight(); j++) {
             for (int i = 0; i < image.getWidth(); i++) {
                 image.setRGB(i, j, 0xFF00FF00);
@@ -598,8 +604,8 @@ public class RaycastRenderer extends Renderer implements TFChangeListener {
                         + volumeCenter[1] + 1 * k * viewVec[1];
                     pixelCoord[2] = uVec[2] * (i - imageCenter) + vVec[2] * (j - imageCenter)
                         + volumeCenter[2] + 1 * k * viewVec[2];
-                    
-                    int value = getVoxel(pixelCoord);
+                    //System.out.println(pixelCoord[0] + " " + pixelCoord[1] + " " + pixelCoord[2]);
+                    int value = trilinearInterpolation(pixelCoord);
                     TFColor newColor = new TFColor();
                     newColor.a = baseColor.a;
                     newColor.r = baseColor.r;
@@ -712,7 +718,7 @@ public class RaycastRenderer extends Renderer implements TFChangeListener {
                 pixelCoord[2] = uVec[2] * (i - imageCenter) + vVec[2] * (j - imageCenter)
                         + volumeCenter[2];
 
-                int val = getVoxel(pixelCoord);
+                int val = trilinearInterpolation(pixelCoord);
                 
                 // Map the intensity to a grey value by linear scaling
                 voxelColor.r = val/max;
