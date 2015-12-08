@@ -282,7 +282,6 @@ public class RaycastRenderer extends Renderer implements TFChangeListener {
     }
 
     short getVoxel(double[] coord) {
-
         if (coord[0] < 0 || coord[0] > volume.getDimX() || coord[1] < 0 || coord[1] > volume.getDimY()
                 || coord[2] < 0 || coord[2] > volume.getDimZ()) {
             return 0;
@@ -292,7 +291,7 @@ public class RaycastRenderer extends Renderer implements TFChangeListener {
         int y = (int) Math.floor(coord[1]);
         int z = (int) Math.floor(coord[2]);
 
-        return volume.getVoxel(x, y, z);
+       return volume.getVoxel(x, y, z);
     }
     
     TFColor getColor(double[] coord){
@@ -552,15 +551,12 @@ public class RaycastRenderer extends Renderer implements TFChangeListener {
         
         double dotLN = L[0]*N[0] + L[1]*N[1]+ L[2]*N[2];
         double dotNH = N[0]*H[0] + N[1]*H[1]+ N[2]*H[2];
-        if (dotLN < 0 || dotNH < 0){
-            return original;
-        }
         double dotNHa = Math.pow(dotNH, alpha);
         //System.out.println(dotLN + " " + dotNHa);
         newColor.a = original.a;
-        newColor.r = lightSource.r * ambient + original.r * diff * dotLN +  spec * dotNHa;
-        newColor.g = lightSource.g * ambient + original.g * diff * dotLN +  spec * dotNHa;
-        newColor.b = lightSource.b * ambient + original.b * diff * dotLN +  spec * dotNHa;
+        newColor.r = lightSource.r * ambient + original.r * diff * Math.max(0.0, dotLN) + original.r * spec * Math.max(0.0, dotNHa);
+        newColor.g = lightSource.g * ambient + original.g * diff * Math.max(0.0, dotLN) + original.g * spec * Math.max(0.0, dotNHa);
+        newColor.b = lightSource.b * ambient + original.b * diff * Math.max(0.0, dotLN) + original.b * spec * Math.max(0.0, dotNHa);
         //System.out.println(newColor.r + " " + newColor.g + " " + newColor.b);
         return newColor;
      }
@@ -614,42 +610,20 @@ public class RaycastRenderer extends Renderer implements TFChangeListener {
                     double r = tfEditor2D.triangleWidget.radius;
                     float magnitude = voxGra.mag;
                     if (magnitude == 0.0f && value == fv){
-                        newColor.a = 1;
+                        newColor.a = baseColor.a;
                     } else if (magnitude > 0.0f &&  fv >= value - r * magnitude  && fv <= value + r * magnitude){
                         
-                        newColor.a = 1 - (1/r) * Math.abs((fv - value)/magnitude);
+                        newColor.a = baseColor.a * (1 - (1/r) * Math.abs((fv - value)/magnitude));
                     } else {
                         
                         newColor.a = 0;
                     }
-                    
+                    if(shading){
+                        newColor = phongShading(newColor , pixelCoord, viewVec, 0.1, 0.7, 0.2, 10);
+                    }
                     compositeColors.add(newColor);
                 }
-                // Map the intensity to a grey value by linear scaling
                 
-                /* double r = compositeColors.get(0).r;
-                double g = compositeColors.get(0).g;
-                double b = compositeColors.get(0).b;
-                double a = compositeColors.get(0).a;
-                for (int q = 1; q < compositeColors.size(); q++){
-                    double invOpacity = 1-compositeColors.get(q).a;
-                    r *= invOpacity;
-                    g *= invOpacity;
-                    b *= invOpacity;
-                    a *= invOpacity;
-                    r += compositeColors.get(q).r;
-                    g += compositeColors.get(q).g;
-                    b += compositeColors.get(q).b;
-                    a += compositeColors.get(q).a;
-                }
-                voxelColor.a = a;
-                voxelColor.r = r;
-                voxelColor.g = g;
-                voxelColor.b = b;
-                */
-                if(shading){
-                        compositeColors.set(compositeColors.size()-1, phongShading(compositeColors.get(compositeColors.size()-1) , pixelCoord, originPoint, 0.1, 0.7, 0.2, 10));
-                    }
                 double ru = 0;
                 double gu = 0;
                 double bu = 0;
