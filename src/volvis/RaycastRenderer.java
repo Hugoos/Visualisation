@@ -37,8 +37,9 @@ public class RaycastRenderer extends Renderer implements TFChangeListener {
     private int MIP = 1;
     private int COMPOSITE = 2;
     private int TRANSFER2D = 3;
-    private double sampleDistance = 2.5;
+    private double sampleDistance = 2;
     private boolean debug = false;
+    private double[] pos = new double[3];
 
     //private boolean lowRes = true;
     
@@ -71,6 +72,10 @@ public class RaycastRenderer extends Renderer implements TFChangeListener {
     public void setCurrentMode(int currentMode) {
         this.currentMode = currentMode;
         vis.update();
+    }
+    
+    public void setPos(double[] posi){
+        pos = posi;
     }
 
     public Visualization getVis() {
@@ -447,9 +452,14 @@ public class RaycastRenderer extends Renderer implements TFChangeListener {
                         + volumeCenter[2] + 1 * k * viewVec[2];
                     
                     int value = trilinearInterpolation(pixelCoord);
-                    TFColor newColor = tFunc.getColor(value);
+                    TFColor newColor = new TFColor();
+                    
+                    newColor.a = tFunc.getColor(value).a;
+                    newColor.r = tFunc.getColor(value).r;
+                    newColor.g = tFunc.getColor(value).g;
+                    newColor.b = tFunc.getColor(value).b;
                     if(shading){   
-                        newColor = phongShading( newColor , pixelCoord, viewVec, 0.1, 0.7, 0.2, 10);
+                        newColor = phongShading(newColor , pixelCoord, viewVec, 0.1, 0.7, 0.2, 10);
                     }
                     compositeColors.add(newColor);
                 }
@@ -481,6 +491,7 @@ public class RaycastRenderer extends Renderer implements TFChangeListener {
                 double bu = 0;
                 double au = 0;
                 for (int q = 0; q < compositeColors.size(); q++){
+                    
                      double aU = compositeColors.get(q).a;
                     if (aU > 0) {
                         double rU = compositeColors.get(q).r;
@@ -525,19 +536,17 @@ public class RaycastRenderer extends Renderer implements TFChangeListener {
     private TFColor phongShading(TFColor original, double[] coord, double[] origin, double ambient, double diff, double spec, double alpha){
         VoxelGradient gradient = getGradient(coord);
         TFColor newColor = new TFColor();
-        TFColor lightSource = new TFColor(0,0,0,0);
-        if (debug){
-            //System.out.println(origin[0] + " " + origin[1] + " " + origin[2]);
-            debug = false;
-        }
+        TFColor lightSource = new TFColor(1,1,1,1);
         double[] L = new double[3]; 
         double[] H = new double[3];
-        double[] N = new double[3];
-        
+        double[] N = new double[3];     
         L[0] = origin[0]-coord[0];
         L[1] = origin[1]-coord[1];
         L[2] = origin[2]-coord[2];
         double mag = Math.sqrt(L[0]*L[0]+L[1]*L[1]+L[2]*L[2]);
+        if (mag == 0.0 ){
+            mag = 0.0000001;
+        }
         L[0] = L[0] / mag;
         L[1] = L[1] / mag;
         L[2] = L[2] / mag;
@@ -545,29 +554,44 @@ public class RaycastRenderer extends Renderer implements TFChangeListener {
         H[1] = 2*L[1];
         H[2] = 2*L[2];
         mag = Math.sqrt(H[0]*H[0]+H[1]*H[1]+H[2]*H[2]);
+        if (mag == 0.0){
+            mag = 0.0000001;
+        }
         H[0] = H[0] / mag;
         H[1] = H[1] / mag;
         H[2] = H[2] / mag;
-        //if (gradient.mag == 0.0 && gradient.x == 0.0 && gradient.y == 0.0 && gradient.z == 0.0 ){
-        //    return original;
-        //}
-        N[0] = (double) gradient.x / (double) gradient.mag;
-        N[1] = (double) gradient.y / (double) gradient.mag;
-        N[2] = (double) gradient.z / (double) gradient.mag;
+        mag = (double) gradient.mag;
+        if (mag == 0.0){
+            mag = 0.0000001;
+        }
+        
+        N[0] = -((double) gradient.x / mag);
+        N[1] = -((double) gradient.y / mag);
+        N[2] = -((double) gradient.z / mag);
+        if(N[0] != 0 || N[1] != 0 || N[2] != 0){
+            //System.out.println("[" +N[0] + "," + N[1] + "," + N[2] + "]" + " " + "[" +L[0] + "," + L[1] + "," + L[2] + "]");
+        }
         double dotLN = VectorMath.dotproduct(L, N);
-        double dotNH = VectorMath.dotproduct(N, H);;
+        if(N[0] != 0 || N[1] != 0 || N[2] != 0){
+            //System.out.println(dotLN);
+        }
+        double dotNH = VectorMath.dotproduct(N, H);
         double dotNHa = Math.pow(dotNH, alpha);
-        //System.out.println(dotLN + " " + dotNHa);
         newColor.a = original.a;
         newColor.r = lightSource.r * ambient + original.r * diff * Math.max(0.0, dotLN) + original.r * spec * Math.max(0.0, dotNHa);
         newColor.g = lightSource.g * ambient + original.g * diff * Math.max(0.0, dotLN) + original.g * spec * Math.max(0.0, dotNHa);
         newColor.b = lightSource.b * ambient + original.b * diff * Math.max(0.0, dotLN) + original.b * spec * Math.max(0.0, dotNHa);
-        //System.out.println(newColor.r + " " + newColor.g + " " + newColor.b);
+        if (original.r * diff * Math.max(0.0, dotLN) > 0 ||  spec * Math.max(0.0, dotNHa) > 0){
+            //System.out.println(lightSource.g * ambient + " " + original.g * diff * Math.max(0.0, dotLN) + " " + original.g * spec * Math.max(0.0, dotNHa));
+        }
+        newColor.r *= 1.5;
+        newColor.g *= 1.5;
+        newColor.b *= 1.5;
         return newColor;
      }
     
     void transfer2D(double[] viewMatrix){
-        debug = true;
+        //debug = true;
         for (int j = 0; j < image.getHeight(); j++) {
             for (int i = 0; i < image.getWidth(); i++) {
                 image.setRGB(i, j, 0xFF00FF00);
@@ -625,7 +649,12 @@ public class RaycastRenderer extends Renderer implements TFChangeListener {
                         newColor.a = 0;
                     }
                     if(shading){
-                        newColor = phongShading(newColor , pixelCoord, viewVec, 0.1, 0.7, 0.2, 10);
+                        TFColor testColor = new TFColor();
+                        testColor.a = newColor.a;
+                        testColor.r = newColor.r;
+                        testColor.g = newColor.g;
+                        testColor.b = newColor.b;
+                        newColor = phongShading(testColor , pixelCoord, pos, 0.1, 0.7, 0.2, 10);
                     }
                     compositeColors.add(newColor);
                 }
