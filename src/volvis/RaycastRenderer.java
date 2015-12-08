@@ -42,25 +42,26 @@ public class RaycastRenderer extends Renderer implements TFChangeListener {
     //private boolean lowRes = true;
     
     //point to interpolate
-        double[] p = new double[3];
+        int tempValue = 0;
+        double[] p = new double[4];
         //voxels
-        double[] p000 = new double[3];
-        double[] p001 = new double[3];
-        double[] p010 = new double[3];
-        double[] p011 = new double[3];
-        double[] p100 = new double[3];
-        double[] p101 = new double[3];
-        double[] p110 = new double[3];
-        double[] p111 = new double[3];
+        double[] p000 = new double[4];
+        double[] p001 = new double[4];
+        double[] p010 = new double[4];
+        double[] p011 = new double[4];
+        double[] p100 = new double[4];
+        double[] p101 = new double[4];
+        double[] p110 = new double[4];
+        double[] p111 = new double[4];
         //C values
-        double[] c0 = new double[3];
-        double[] c1 = new double[3];
-        double[] c2 = new double[3];
-        double[] c3 = new double[3];
-        double[] c4 = new double[3];
-        double[] c5 = new double[3];
-        double[] c6 = new double[3];
-        double[] c7 = new double[3];
+        double[] c0 = new double[4];
+        double[] c1 = new double[4];
+        double[] c2 = new double[4];
+        double[] c3 = new double[4];
+        double[] c4 = new double[4];
+        double[] c5 = new double[4];
+        double[] c6 = new double[4];
+        double[] c7 = new double[4];
 
     private boolean shading = false;
     private TFColor[] data;
@@ -157,8 +158,7 @@ public class RaycastRenderer extends Renderer implements TFChangeListener {
     public TransferFunctionEditor getTFPanel() {
         return tfEditor;
     }
-    
-    TFColor triLinearInterpolation(double[] coord){
+    TFColor triLinearInterpolation1(double[] coord){
         TFColor interpolatedColor = new TFColor();
         //Rodrigo todo      
         
@@ -166,16 +166,60 @@ public class RaycastRenderer extends Renderer implements TFChangeListener {
         double[] interpol = new double[3];
         VectorMath.setVector(interpol, 0, 0, 0);
         //init p values
-        VectorMath.setVector(p, 0, 0, 0);
-        VectorMath.setVector(p000, 0, 0, 0);
-        VectorMath.setVector(p001, 0, 0, 0);
-        VectorMath.setVector(p010, 0, 0, 0);
-        VectorMath.setVector(p011, 0, 0, 0);
-        VectorMath.setVector(p100, 0, 0, 0);
-        VectorMath.setVector(p101, 0, 0, 0);
-        VectorMath.setVector(p110, 0, 0, 0);
-        VectorMath.setVector(p111, 0, 0, 0);
-        //set c values
+        VectorMath.setVector(p, coord[0], coord[1], coord[2]);
+        VectorMath.setVector(p000, Math.floor(p[0]), Math.floor(p[1]), Math.floor(p[2]));
+        VectorMath.setVector(p001, p000[0], p000[1], p000[0]+1);
+        VectorMath.setVector(p010, p000[0], p000[0]+1, p000[0]);
+        VectorMath.setVector(p011, p000[0], p000[0]+1, p000[0]+1);
+        VectorMath.setVector(p100, p000[0]+1, p000[0], p000[0]);
+        VectorMath.setVector(p101, p000[0]+1, p000[0], p000[0]+1);
+        VectorMath.setVector(p110, p000[0]+1, p000[0]+1, p000[0]);
+        VectorMath.setVector(p111, p000[0]+1, p000[0]+1, p000[0]+1);
+        
+        //Get delta increments
+        double deltaX = (p[0]-p000[0])/(p111[0]-p000[0]);
+        double deltaY = (p[1]-p000[1])/(p111[1]-p000[1]);
+        double deltaZ = (p[2]-p000[2])/(p111[2]-p000[2]);
+        
+        //GET colors p(x,y,z)
+        tempValue = getVoxel(p000);
+        TFColor p000C = tFunc.getColor(tempValue);
+        VectorMath.setVector(p000, p000C.r, p000C.g, p000C.b);
+        
+        tempValue = getVoxel(p001);
+        TFColor p001C = tFunc.getColor(tempValue);
+        VectorMath.setVector(p001, p001C.r, p001C.g, p001C.b);
+        
+        tempValue = getVoxel(p010);
+        TFColor p010C = tFunc.getColor(tempValue);
+        VectorMath.setVector(p010, p010C.r, p010C.g, p010C.b);
+        
+        tempValue = getVoxel(p011);
+        TFColor p011C = tFunc.getColor(tempValue);
+        VectorMath.setVector(p011, p011C.r, p011C.g, p011C.b);
+        
+        
+        tempValue = getVoxel(p100);
+        TFColor p100C = tFunc.getColor(tempValue);
+        VectorMath.setVector(p100, p100C.r, p100C.g, p100C.b);
+        
+        
+        tempValue = getVoxel(p101);
+        TFColor p101C = tFunc.getColor(tempValue);
+        VectorMath.setVector(p101, p101C.r, p101C.g, p101C.b);
+        
+        
+        tempValue = getVoxel(p110);
+        TFColor p110C = tFunc.getColor(tempValue);
+        VectorMath.setVector(p110, p110C.r, p110C.g, p110C.b);
+        
+        
+        tempValue = getVoxel(p111);
+        TFColor p111C = tFunc.getColor(tempValue);
+        VectorMath.setVector(p111, p111C.r, p111C.g, p111C.b);
+        
+        
+        //Calculate C values
         c0[0] = p000[0]; c0[1] = p000[1]; c0[2] = p000[2];
         VectorMath.minusVector(p100, p000, c1);
         VectorMath.minusVector(p010, p000, c2);
@@ -192,24 +236,50 @@ public class RaycastRenderer extends Renderer implements TFChangeListener {
         c7[0] = p111[0] - p011[0] - p101[0] - p110[0] + p100[0] + p001[0] + p010[0] - p000[0];
         c7[1] = p111[1] - p011[1] - p101[1] - p110[1] + p100[1] + p001[1] + p010[1] - p000[1];
         c7[2] = p111[2] - p011[2] - p101[2] - p110[2] + p100[2] + p001[2] + p010[2] - p000[2];
-        //Get delta increments
-        double deltaX = (p[0]-p000[0])/(p111[0]-p000[0]);
-        double deltaY = (p[1]-p000[1])/(p111[1]-p000[1]);
-        double deltaZ = (p[2]-p000[2])/(p111[2]-p000[2]);
         //get interpolated value
         interpol[0] = c0[0] + c1[0]*deltaX + c2[0]*deltaY + c3[0]*deltaZ + c4[0]*deltaX*deltaY + c5[0]*deltaY*deltaZ + c6[0]*deltaZ*deltaX + c7[0]*deltaX*deltaY*deltaZ;
         interpol[1] = c0[1] + c1[1]*deltaX + c2[1]*deltaY + c3[1]*deltaZ + c4[1]*deltaX*deltaY + c5[1]*deltaY*deltaZ + c6[1]*deltaZ*deltaX + c7[1]*deltaX*deltaY*deltaZ;
         interpol[2] = c0[2] + c1[2]*deltaX + c2[2]*deltaY + c3[2]*deltaZ + c4[2]*deltaX*deltaY + c5[2]*deltaY*deltaZ + c6[2]*deltaZ*deltaX + c7[2]*deltaX*deltaY*deltaZ;
-        
-        
-        
-        
-        
-        
+
         
         return interpolatedColor;
     }
-     
+    public short trilinearInterpolation(double[] coord){
+        double[] Vxyz = new double[8]; //each vertex V000, V001, V010, V011, V100, V101, V110, V111
+        double alpha = 0;
+        double beta = 0;
+        double gamma = 0;
+        //Check if inside the box (x,y,z) else just return cero
+        if(  (0<=Math.floor(coord[0]) && Math.ceil(coord[0]) < volume.getDimX())  && //check [0,volDimX]
+             (0<=Math.floor(coord[1]) && Math.ceil(coord[1]) < volume.getDimY())  && //check [0,volDimY]
+             (0<=Math.floor(coord[2]) && Math.ceil(coord[2]) < volume.getDimZ())     //check [0,volDimZ]
+        ){ 
+            Vxyz[0] = volume.getVoxel((int)Math.floor(coord[0]) , (int)Math.floor(coord[1]), (int)Math.floor(coord[2])); //V000
+            Vxyz[1] = volume.getVoxel((int)Math.ceil(coord[0]) , (int)Math.floor(coord[1]), (int)Math.floor(coord[2])); //V100
+            Vxyz[2] = volume.getVoxel((int)Math.floor(coord[0]) , (int)Math.ceil(coord[1]), (int)Math.floor(coord[2])); //V010
+            Vxyz[3] = volume.getVoxel((int)Math.ceil(coord[0]) , (int)Math.ceil(coord[1]), (int)Math.floor(coord[2])); //V110
+            Vxyz[4] = volume.getVoxel((int)Math.floor(coord[0]) , (int)Math.floor(coord[1]), (int)Math.ceil(coord[2])); //V001
+            Vxyz[5] = volume.getVoxel((int)Math.ceil(coord[0]) , (int)Math.floor(coord[1]), (int)Math.ceil(coord[2])); //V101
+            Vxyz[6] = volume.getVoxel((int)Math.floor(coord[0]) , (int)Math.ceil(coord[1]), (int)Math.ceil(coord[2])); //V011
+            Vxyz[7] = volume.getVoxel((int)Math.ceil(coord[0]) , (int)Math.ceil(coord[1]), (int)Math.ceil(coord[2])); //V111
+            //compute alpha beta and gamma
+            alpha = coord[0] - (int)Math.floor(coord[0]);
+            beta = coord[1] - (int)Math.floor(coord[1]);
+            gamma = coord[2] - (int)Math.floor(coord[2]);
+            
+            return (short)((1-alpha)*(1-beta)*(1-gamma)*Vxyz[0] //Value at position (x,y,z) within the cube
+                            + alpha*(1-beta)*(1-gamma)*Vxyz[1]
+                            + (1-alpha)*beta*(1-gamma)*Vxyz[2] 
+                            + alpha*beta*(1 - gamma)*Vxyz[3]
+                            + (1-alpha)*(1-beta)*gamma*Vxyz[4]
+                            + alpha*(1-beta)*gamma*Vxyz[5]
+                            + (1-alpha)*beta*gamma*Vxyz[6] 
+                            + alpha*beta*gamma*Vxyz[7]
+                           );
+        }else{//Case when outside of dimensions
+            return 0;
+        }
+    }
 
     short getVoxel(double[] coord) {
         if (coord[0] < 0 || coord[0] > volume.getDimX() || coord[1] < 0 || coord[1] > volume.getDimY()
