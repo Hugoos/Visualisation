@@ -54,6 +54,7 @@ public class Visualization implements GLEventListener, TFChangeListener {
     // Add a new renderer (i.e. visualization method) to the visualization
     public void addRenderer(Renderer vis) {
         renderers.add(vis);
+        trackball.setRenderer((RaycastRenderer)vis);
     }
 
     public void update() {

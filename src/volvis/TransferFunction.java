@@ -35,11 +35,11 @@ public class TransferFunction {
     
     public void setTestFunc() {
         // control points for orange data set
-        addControlPoint(0, 0.0, 0.0, 0.0, 0.0);
-        addControlPoint(40, 0.0, 0.0, 0.0, 0.0);
-        addControlPoint(75, 1.0, 0.666, 0.0, 1.0);
-        addControlPoint(103, 0.0, 0.0, 0.0, 0.5);
-        addControlPoint(205, 0.0, 0.0, 0.0, 0.0);
+        //addControlPoint(0, 0.0, 0.0, 0.0, 0.0);
+        //addControlPoint(40, 0.0, 0.0, 0.0, 0.0);
+        //addControlPoint(75, 1.0, 0.666, 0.0, 1.0);
+        //addControlPoint(103, 0.0, 0.0, 0.0, 0.5);
+        //addControlPoint(205, 0.0, 0.0, 0.0, 0.0);
     }
 
     public int getMinimum() {

@@ -4,8 +4,8 @@
  */
 package util;
 
-import javax.media.opengl.GL;
 import javax.media.opengl.GL2;
+import volvis.RaycastRenderer;
 
 /**
  *
@@ -20,6 +20,7 @@ public class TrackballInteractor {
     private double angle;
     private int width, height;
     private boolean rotating = false;
+    private RaycastRenderer ray;
 
     public TrackballInteractor(int width, int height) {
         this.width = width;
@@ -73,13 +74,13 @@ public class TrackballInteractor {
     public void drag(int mx, int my) {
 
         double[] curPos = new double[3];
-
+            
         trackball_ptov(mx, my, width, height, curPos);
 
         double dx = curPos[0] - lastPos[0];
         double dy = curPos[1] - lastPos[1];
         double dz = curPos[2] - lastPos[2];
-
+        ray.setPos(curPos);
         if ((dx != 0) || (dy != 0) || (dz != 0)) {
             angle = 90.0 * Math.sqrt(dx * dx + dy * dy + dz * dz);
             axis[0] = lastPos[1] * curPos[2] - lastPos[2] * curPos[1];
@@ -91,7 +92,9 @@ public class TrackballInteractor {
             lastPos[2] = curPos[2];
         }
     }
-
+    public void setRenderer(RaycastRenderer ren){
+        ray = ren;
+    }
     public void updateTransform(GL2 gl) {
         gl.glPushMatrix();
         gl.glLoadIdentity();
