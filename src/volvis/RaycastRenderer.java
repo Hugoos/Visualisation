@@ -129,10 +129,10 @@ public class RaycastRenderer extends Renderer implements TFChangeListener {
         volume = vol;
         System.out.println("Computing gradients");
         gradients = new GradientVolume(vol);
-        data = new TFColor[volume.getDimX() * volume.getDimY() * volume.getDimZ()];
-        for (int i = 0; i < data.length; i++){
-            data[i] = null;
-        }
+        //data = new TFColor[volume.getDimX() * volume.getDimY() * volume.getDimZ()];
+        //for (int i = 0; i < data.length; i++){
+        //    data[i] = null;
+        //}
 
         // set up image for storing the resulting rendering
         // the image width and height are equal to the length of the volume diagonal
@@ -310,7 +310,7 @@ public class RaycastRenderer extends Renderer implements TFChangeListener {
         int x = (int) Math.floor(coord[0]);
         int y = (int) Math.floor(coord[1]);
         int z = (int) Math.floor(coord[2]);
-        if (x + volume.getDimX()*(y + volume.getDimY() * z) < data.length || x + volume.getDimX()*(y + volume.getDimY() * z) >= 0){
+        if (x + volume.getDimX()*(y + volume.getDimY() * z) < data.length && x + volume.getDimX()*(y + volume.getDimY() * z) >= 0){
             if (data[x + volume.getDimX()*(y + volume.getDimY() * z)] != null){
                 return data[x + volume.getDimX()*(y + volume.getDimY() * z)];
             } else {
@@ -465,7 +465,8 @@ public class RaycastRenderer extends Renderer implements TFChangeListener {
                     pixelCoord[2] = uVec[2] * (i - imageCenter) + vVec[2] * (j - imageCenter)
                         + volumeCenter[2] + 1 * k * viewVec[2];
                     
-                    int value = trilinearInterpolation(pixelCoord);
+                    //int value = trilinearInterpolation(pixelCoord);
+                    int value = getVoxel(pixelCoord);
                     TFColor newColor = new TFColor();
                     
                     newColor.a = tFunc.getColor(value).a;
@@ -609,9 +610,9 @@ public class RaycastRenderer extends Renderer implements TFChangeListener {
     void transfer2D(double[] viewMatrix){        
         double gradient_top = tfEditor2D.triangleWidget.gradUpperBound;
         double gradient_down = tfEditor2D.triangleWidget.gradLowerBound;
-        for (int i = 0; i < data.length; i++) {
-            data[i] = null;
-        }
+        //for (int i = 0; i < data.length; i++) {
+        //    data[i] = null;
+        //}
         System.out.println("gradients: " + gradient_top + gradient_down);
         debug = true;
 
@@ -683,7 +684,7 @@ public class RaycastRenderer extends Renderer implements TFChangeListener {
                         testColor.r = newColor.r;
                         testColor.g = newColor.g;
                         testColor.b = newColor.b;
-                        newColor = getPhongColor(pixelCoord, viewVec, testColor);
+                        newColor = phongShading(testColor , pixelCoord, viewVec, 0.1, 0.7, 0.2, 10);
                     }
                     compositeColors.add(newColor);
                 }
