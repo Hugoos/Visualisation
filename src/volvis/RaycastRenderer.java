@@ -607,12 +607,13 @@ public class RaycastRenderer extends Renderer implements TFChangeListener {
      }
     
     void transfer2D(double[] viewMatrix){        
-        double gradient_top = tfEditor2D.triangleWidget.gradUpperBound;
-        double gradient_down = tfEditor2D.triangleWidget.gradLowerBound;
+        double gradientUpperBound = tfEditor2D.triangleWidget.gradUpperBound;
+        double gradientLowerBound = tfEditor2D.triangleWidget.gradLowerBound;
+        
         for (int i = 0; i < data.length; i++) {
             data[i] = null;
         }
-        System.out.println("gradients: " + gradient_top + gradient_down);
+        System.out.println("gradients: " + gradientUpperBound + gradientLowerBound);
         debug = true;
 
         for (int j = 0; j < image.getHeight(); j++) {
@@ -663,9 +664,9 @@ public class RaycastRenderer extends Renderer implements TFChangeListener {
                     double r = tfEditor2D.triangleWidget.radius;
                     float magnitude = voxGra.mag;
                     
-                    if(magnitude > gradient_top || magnitude < gradient_down){//Widget modification jump next iteration of loop
-                        continue;
-                    }
+                    //Widget modification part
+                    //when it's outside of the box we don't add to the List and continue on the for loop
+                    if(magnitude > gradientUpperBound || magnitude < gradientLowerBound) continue;
                     
                     
                     if (magnitude == 0.0f && value == fv){
