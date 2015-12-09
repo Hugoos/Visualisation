@@ -120,6 +120,7 @@ public class TransferFunction2DEditor extends javax.swing.JPanel {
         jLabel8 = new javax.swing.JLabel();
         jLabel9 = new javax.swing.JLabel();
         jLabel10 = new javax.swing.JLabel();
+        gradMagnitudButton = new javax.swing.JButton();
 
         javax.swing.GroupLayout plotPanelLayout = new javax.swing.GroupLayout(plotPanel);
         plotPanel.setLayout(plotPanelLayout);
@@ -198,6 +199,13 @@ public class TransferFunction2DEditor extends javax.swing.JPanel {
 
         jLabel10.setText("Up");
 
+        gradMagnitudButton.setText("setGradMag");
+        gradMagnitudButton.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                gradMagnitudButtonActionPerformed(evt);
+            }
+        });
+
         javax.swing.GroupLayout layout = new javax.swing.GroupLayout(this);
         this.setLayout(layout);
         layout.setHorizontalGroup(
@@ -239,11 +247,11 @@ public class TransferFunction2DEditor extends javax.swing.JPanel {
                                     .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, layout.createSequentialGroup()
                                         .addComponent(jLabel8)
                                         .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
-                                        .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                                            .addGroup(layout.createSequentialGroup()
-                                                .addGap(10, 10, 10)
-                                                .addComponent(jLabel9))
-                                            .addComponent(gradient1, javax.swing.GroupLayout.PREFERRED_SIZE, 58, javax.swing.GroupLayout.PREFERRED_SIZE))))
+                                        .addComponent(gradient1, javax.swing.GroupLayout.PREFERRED_SIZE, 58, javax.swing.GroupLayout.PREFERRED_SIZE))
+                                    .addGroup(layout.createSequentialGroup()
+                                        .addComponent(gradMagnitudButton)
+                                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                                        .addComponent(jLabel9)))
                                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                                 .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
                                     .addComponent(radiusLabel, javax.swing.GroupLayout.PREFERRED_SIZE, 84, javax.swing.GroupLayout.PREFERRED_SIZE)
@@ -299,7 +307,8 @@ public class TransferFunction2DEditor extends javax.swing.JPanel {
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                 .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
                     .addComponent(jLabel10)
-                    .addComponent(jLabel9))
+                    .addComponent(jLabel9)
+                    .addComponent(gradMagnitudButton))
                 .addContainerGap(javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
         );
     }// </editor-fold>//GEN-END:initComponents
@@ -368,6 +377,11 @@ public class TransferFunction2DEditor extends javax.swing.JPanel {
     changed();
     }//GEN-LAST:event_gradient2ActionPerformed
 
+    private void gradMagnitudButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_gradMagnitudButtonActionPerformed
+        // TODO add your handling code here:
+        
+    }//GEN-LAST:event_gradMagnitudButtonActionPerformed
+
     public class TriangleWidget {
 
         public short baseIntensity;
@@ -386,6 +400,7 @@ public class TransferFunction2DEditor extends javax.swing.JPanel {
 
     // Variables declaration - do not modify//GEN-BEGIN:variables
     private javax.swing.JButton colorButton;
+    private javax.swing.JButton gradMagnitudButton;
     private javax.swing.JTextField gradient1;
     private javax.swing.JTextField gradient2;
     private javax.swing.JTextField intensityLabel;

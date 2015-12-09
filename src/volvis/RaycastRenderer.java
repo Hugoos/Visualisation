@@ -649,7 +649,7 @@ public class RaycastRenderer extends Renderer implements TFChangeListener {
                     double r = tfEditor2D.triangleWidget.radius;
                     float magnitude = voxGra.mag;
                     
-                    if(magnitude > gradient_top || magnitude < gradient_down){
+                    if(magnitude > gradient_top || magnitude < gradient_down){//Widget modification jump next iteration of loop
                         continue;
                     }
                     
