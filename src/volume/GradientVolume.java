@@ -55,6 +55,7 @@ public class GradientVolume {
         //for (int i=0; i<data.length; i++) {
             //data[i] = zero;
         //}   
+        
         float dx = 0;
         float dy = 0;
         float dz = 0;

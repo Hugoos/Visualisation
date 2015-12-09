@@ -41,8 +41,11 @@ public class RaycastRenderer extends Renderer implements TFChangeListener {
     private boolean debug = false;
     //private double[] pos = new double[3];
 
+
     //private boolean lowRes = true;
     
+    
+
     //point to interpolate
         int tempValue = 0;
         double[] p = new double[4];
@@ -461,6 +464,7 @@ public class RaycastRenderer extends Renderer implements TFChangeListener {
                     //if(shading){   
                     //    newColor = phongShading(newColor , pixelCoord, viewVec, 0.1, 0.7, 0.2, 10);
                     //}
+
                     compositeColors.add(newColor);
                 }
                 // Map the intensity to a grey value by linear scaling
@@ -537,6 +541,7 @@ public class RaycastRenderer extends Renderer implements TFChangeListener {
         VoxelGradient gradient = getGradient(coord);
         TFColor newColor = new TFColor();
         TFColor lightSource = new TFColor(1,1,1,1);
+
         double[] L = new double[3]; 
         double[] H = new double[3];
         double[] N = new double[3];     
@@ -590,8 +595,12 @@ public class RaycastRenderer extends Renderer implements TFChangeListener {
         return newColor;
      }
     
-    void transfer2D(double[] viewMatrix){
-        //debug = true;
+    void transfer2D(double[] viewMatrix){        
+        double gradient_top = tfEditor2D.triangleWidget.gradUpperBound;
+        double gradient_down = tfEditor2D.triangleWidget.gradLowerBound;
+        System.out.println("gradients: " + gradient_top + gradient_down);
+        debug = true;
+
         for (int j = 0; j < image.getHeight(); j++) {
             for (int i = 0; i < image.getWidth(); i++) {
                 image.setRGB(i, j, 0xFF00FF00);
@@ -639,6 +648,12 @@ public class RaycastRenderer extends Renderer implements TFChangeListener {
                     int fv = tfEditor2D.triangleWidget.baseIntensity;
                     double r = tfEditor2D.triangleWidget.radius;
                     float magnitude = voxGra.mag;
+                    
+                    if(magnitude > gradient_top || magnitude < gradient_down){
+                        continue;
+                    }
+                    
+                    
                     if (magnitude == 0.0f && value == fv){
                         newColor.a = baseColor.a;
                     } else if (magnitude > 0.0f &&  fv >= value - r * magnitude  && fv <= value + r * magnitude){
