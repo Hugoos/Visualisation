@@ -130,6 +130,9 @@ public class RaycastRenderer extends Renderer implements TFChangeListener {
         System.out.println("Computing gradients");
         gradients = new GradientVolume(vol);
         data = new TFColor[volume.getDimX() * volume.getDimY() * volume.getDimZ()];
+        for (int i = 0; i < data.length; i++){
+            data[i] = null;
+        }
 
         // set up image for storing the resulting rendering
         // the image width and height are equal to the length of the volume diagonal
@@ -303,12 +306,20 @@ public class RaycastRenderer extends Renderer implements TFChangeListener {
        return volume.getVoxel(x, y, z);
     }
     
-    TFColor getColor(double[] coord){
+    TFColor getPhongColor(double[] coord, double[] viewVec, TFColor testColor){
         int x = (int) Math.floor(coord[0]);
         int y = (int) Math.floor(coord[1]);
         int z = (int) Math.floor(coord[2]);
-        
-        return data[x + volume.getDimX()*(y + volume.getDimY() * z)];
+        if (x + volume.getDimX()*(y + volume.getDimY() * z) < data.length || x + volume.getDimX()*(y + volume.getDimY() * z) >= 0){
+            if (data[x + volume.getDimX()*(y + volume.getDimY() * z)] != null){
+                return data[x + volume.getDimX()*(y + volume.getDimY() * z)];
+            } else {
+                setColor(coord, phongShading(testColor , coord, viewVec, 0.1, 0.7, 0.2, 10));
+                return data[x + volume.getDimX()*(y + volume.getDimY() * z)];
+            }
+        } else {
+            return new TFColor(0,0,0,0);
+        }
     }
     
     public void setColor(double[] coord, TFColor value) {
@@ -598,6 +609,9 @@ public class RaycastRenderer extends Renderer implements TFChangeListener {
     void transfer2D(double[] viewMatrix){        
         double gradient_top = tfEditor2D.triangleWidget.gradUpperBound;
         double gradient_down = tfEditor2D.triangleWidget.gradLowerBound;
+        for (int i = 0; i < data.length; i++) {
+            data[i] = null;
+        }
         System.out.println("gradients: " + gradient_top + gradient_down);
         debug = true;
 
@@ -669,7 +683,7 @@ public class RaycastRenderer extends Renderer implements TFChangeListener {
                         testColor.r = newColor.r;
                         testColor.g = newColor.g;
                         testColor.b = newColor.b;
-                        newColor = phongShading(testColor , pixelCoord, viewVec, 0.1, 0.7, 0.2, 10);
+                        newColor = getPhongColor(pixelCoord, viewVec, testColor);
                     }
                     compositeColors.add(newColor);
                 }
