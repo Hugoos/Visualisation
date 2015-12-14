@@ -279,6 +279,9 @@ public class RaycastRenderer extends Renderer implements TFChangeListener {
             beta = coord[1] - (int)Math.floor(coord[1]);
             gamma = coord[2] - (int)Math.floor(coord[2]);
             
+            
+            
+            
             return (short)((1-alpha)*(1-beta)*(1-gamma)*Vxyz[0] //Value at position (x,y,z) within the cube
                             + alpha*(1-beta)*(1-gamma)*Vxyz[1]
                             + (1-alpha)*beta*(1-gamma)*Vxyz[2] 
@@ -288,6 +291,7 @@ public class RaycastRenderer extends Renderer implements TFChangeListener {
                             + (1-alpha)*beta*gamma*Vxyz[6] 
                             + alpha*beta*gamma*Vxyz[7]
                            );
+            
         }else{//Case when outside of dimensions
             return 0;
         }
@@ -380,6 +384,8 @@ public class RaycastRenderer extends Renderer implements TFChangeListener {
                         + volumeCenter[2] + 1 * k * viewVec[2];
                     
                     int value = trilinearInterpolation(pixelCoord);
+                    //int value = getVoxel(pixelCoord);
+                    
                     if (value > maxVal){
                         maxVal = value;
                     }
@@ -422,6 +428,8 @@ public class RaycastRenderer extends Renderer implements TFChangeListener {
                     coord[2] = k;
                     
                     int intensity = trilinearInterpolation(coord);
+                    //int intensity = getVoxel(coord);
+                    
                     TFColor newCol = tFunc.getColor(intensity);
                     setColor(coord, newCol);
                 }
@@ -466,6 +474,8 @@ public class RaycastRenderer extends Renderer implements TFChangeListener {
                         + volumeCenter[2] + 1 * k * viewVec[2];
                     
                     int value = trilinearInterpolation(pixelCoord);
+                    //int value = getVoxel(pixelCoord);
+                    
                     TFColor newColor = new TFColor();
                     
                     newColor.a = tFunc.getColor(value).a;
@@ -613,7 +623,7 @@ public class RaycastRenderer extends Renderer implements TFChangeListener {
         for (int i = 0; i < data.length; i++) {
             data[i] = null;
         }
-        System.out.println("gradients: " + gradientUpperBound + gradientLowerBound);
+        //System.out.println("gradients: " + gradientUpperBound + "__" + gradientLowerBound);
         debug = true;
 
         for (int j = 0; j < image.getHeight(); j++) {
